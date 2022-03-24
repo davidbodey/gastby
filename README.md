@@ -7,4 +7,4 @@ Some of the possible future features:
 * redesign grid to improve appearance
 * reorganize images
 * remove extraneous images
-* add srcset
+* add srcset 
