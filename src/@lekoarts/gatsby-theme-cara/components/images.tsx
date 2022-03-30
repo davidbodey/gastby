@@ -1,6 +1,7 @@
 import * as React from "react"
+import {useEffect, useState} from "react"
 import {v4 as uuidv4} from "uuid";
-import {useState, useEffect} from "react";
+import FsLightbox from 'fslightbox-react';
 
 if (typeof window !== "undefined") {
     const UIkit = require("uikit/dist/js/uikit.min");
@@ -8,61 +9,88 @@ if (typeof window !== "undefined") {
     UIkit.use(icons);
 }
 
-const Images =  () => {
-    const [images, setImages] = useState([process.env.GATSBY_BASE + '/DSC04344.jpg']);
+const Images = () => {
+    const [images, setImages] = useState([{thumbnail:process.env.GATSBY_BASE + '/DSC04344.jpg', full:process.env.GATSBY_BASE + '/DSC04344.jpg'}]);
     let pages = [];
 
-    const getImages = async (cursor= 0) => {
+    const getImagesS3 = async () => {
         try {
-            const key = process.env.GATSBY_BEARER;
-            const source = process.env.GATSBY_IMGIX_SOURCE;
-            const limit = 100;
-            let page_cursor = `?page[cursor]=${cursor}&page[limit]=${limit}`;
+            var AWS = require('aws-sdk');
+            AWS.config.update({accessKeyId: process.env.GATSBY_S3_ID, secretAccessKey: process.env.GATSBY_S3_KEY, region: 'us-east-1'});
+            var s3 = new AWS.S3();
 
-            const url = 'https://api.imgix.com/api/v1/assets/' + source + page_cursor;
-            const header = {'Authorization': key};
-            const result = await fetch(url, {headers:header}).then(async (response) => {
-                await response.json().then(async (page) => {
-                    pages.push(page);
-                    cursor += limit; // recursively request the next pages of 100
-                    if (page?.meta?.cursor?.hasMore) await getImages(cursor);
-                })
-            })
+            var params = {
+                Bucket: process.env.GATSBY_S3_BUCKET,
+                Delimiter: '/',
+                Prefix: 'images/'
+            }
+
+            let images = [];
+            await s3.listObjects(params, function (err, data) {
+                if (err) throw err;
+
+                const getThumbnailFromKey = (key, width= 300, height = 300) => {
+                    const request = {
+                        bucket: "severalphotos",
+                        key, // (i.e., photos/img.jpg)
+                        edits: {
+                            normalize: true,
+                            webp: true, // if android
+                            jpeg: true, // fallback
+                            sharpen: true,
+                            resize: {
+                                width: width,
+                                height: height,
+                                fit: "cover"
+                            }
+                        }
+                    }
+                    const str = JSON.stringify(request);
+                    const base64 = btoa(str);
+                    return `${process.env.GATSBY_SHARP}${base64}`;
+                }
+
+                const getFullFromKey = (key) => {
+                    const request = {
+                        bucket: "severalphotos",
+                        key, // (i.e., photos/img.jpg)
+                        edits: {
+                            normalize: true,
+                            webp: true, // if android
+                            jpeg: true, // fallback
+                            resize: {
+                                fit: "cover"
+                            }
+                        }
+                    }
+                    const str = JSON.stringify(request);
+                    const base64 = btoa(str);
+                    return `${process.env.GATSBY_SHARP}${base64}`;
+                }
+
+                // Store thumbnail and full urls using base64 to images array
+                for (let obj of data?.Contents) {
+                    if (obj.Key) images.push({thumbnail:getThumbnailFromKey(obj?.Key), full:getFullFromKey(obj?.Key)});
+                }
+                setImages(images);
+                setToggler(!toggler);
+
+            });
         } catch (e) {
             console.log(e);
         }
     }
 
     useEffect( () => {
-         getImages().then(() => {
-             const images = [];
-             const base_url = process.env.GATSBY_BASE;
-
-             try {
-                 for (const page of pages) {
-                     for (const item of page.data) {
-                         const id = item.id.replace(/.*\//, '');
-
-                         // temp fix for imgix not purging.
-                         if (id != 'DSC01673.jpg' && id != 'DSC01503.jpg') images.push(base_url + id); // store url for each image
-                     }
-                 }
-                 setImages(images);
-             }
-           catch (e) {
-                 console.log(e);
-           }
-         });
+          getImagesS3(); // Populates images array used to generate portfolio
     }, []);
 
-    // imgix real time alterations
-    const alterations = `?w=100&h=100&fit=crop&crop=stretch&auto=format&q=60`;
+    // Used for fs-lightbox
+    const [toggler, setToggler] = useState(false);
     return (
-        <div style={{width: '90vw'}} className="uk-container">
-            {/* Using UIKit requires data- prefix for React */}
-            <div data-uk-lightbox>
-                {images.map(url => <a href={url} key={uuidv4()} className={'uk-animation-fade'}><img src={url+alterations} key={uuidv4()} /></a>)}
-            </div>
+        <div className={'uk-container'} style={{width: '90vw'}} >
+            <span><a className={''} onClick={() => setToggler(!toggler)}>Portfolio</a></span>
+            <FsLightbox toggler={toggler} type="image" sources={images.map(obj=>obj.full)} thumbs={images.map(obj=>obj.thumbnail)} />
         </div>
     )
 }

@@ -2,8 +2,12 @@
 // If need, change your variables before importing Bulma
 $title-color: #ff0000;
 
-.image-gallery {
-  background-color: blue !important;
+// force lightbox to stay open
+.fslightbox-container {
+  pointer-events: none !important;
+}
+.fslightbox-slide-btn-container {
+  pointer-events: all !important;
 }
 
 //@import "~bulma/bulma.sass";
