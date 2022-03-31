@@ -2,12 +2,17 @@
 // If need, change your variables before importing Bulma
 $title-color: #ff0000;
 
-// force lightbox to stay open
-.fslightbox-container {
-  pointer-events: none !important;
+.grid-item {
+  padding: 1.5px;
+  padding-bottom: 20%;
+  background: white;
+  margin: 3px;
 }
-.fslightbox-slide-btn-container {
-  pointer-events: all !important;
+
+.masonry-container {
+  width: 90vw !important;
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
 }
 
 //@import "~bulma/bulma.sass";

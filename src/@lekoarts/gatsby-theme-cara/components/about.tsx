@@ -8,10 +8,6 @@ import { UpDown, UpDownWide } from "@lekoarts/gatsby-theme-cara/src/styles/anima
 import AboutMDX from "@lekoarts/gatsby-theme-cara/src/sections/about"
 
 
-const About = ({ offset, factor = 1 }: { offset: number; factor?: number }) => (
-  <div>
-
-  </div>
-)
+const About = ({ offset, factor = 1 }: { offset: number; factor?: number }) => (<div></div>)
 
 export default About

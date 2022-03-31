@@ -1,7 +1,8 @@
 import * as React from "react"
 import {useEffect, useState} from "react"
 import {v4 as uuidv4} from "uuid";
-import FsLightbox from 'fslightbox-react';
+import 'animate.css';
+import Fbox from "./fbox";
 
 if (typeof window !== "undefined") {
     const UIkit = require("uikit/dist/js/uikit.min");
@@ -11,7 +12,6 @@ if (typeof window !== "undefined") {
 
 const Images = () => {
     const [images, setImages] = useState([{thumbnail:process.env.GATSBY_BASE + '/DSC04344.jpg', full:process.env.GATSBY_BASE + '/DSC04344.jpg'}]);
-    let pages = [];
 
     const getImagesS3 = async () => {
         try {
@@ -29,7 +29,7 @@ const Images = () => {
             await s3.listObjects(params, function (err, data) {
                 if (err) throw err;
 
-                const getThumbnailFromKey = (key, width= 300, height = 300) => {
+                const getThumbnailFromKey = (key, width= 250, height = 250) => {
                     const request = {
                         bucket: "severalphotos",
                         key, // (i.e., photos/img.jpg)
@@ -73,8 +73,6 @@ const Images = () => {
                     if (obj.Key) images.push({thumbnail:getThumbnailFromKey(obj?.Key), full:getFullFromKey(obj?.Key)});
                 }
                 setImages(images);
-                setToggler(!toggler);
-
             });
         } catch (e) {
             console.log(e);
@@ -85,14 +83,19 @@ const Images = () => {
           getImagesS3(); // Populates images array used to generate portfolio
     }, []);
 
-    // Used for fs-lightbox
-    const [toggler, setToggler] = useState(false);
     return (
-        <div className={'uk-container'} style={{width: '90vw'}} >
-            <span><a className={''} onClick={() => setToggler(!toggler)}>Portfolio</a></span>
-            <FsLightbox toggler={toggler} type="image" sources={images.map(obj=>obj.full)} thumbs={images.map(obj=>obj.thumbnail)} />
+        <div className="masonry-container">
+            <Fbox options={{ infinite: true }}>
+                {images.map((obj) => {
+                    return (
+                        <a data-fancybox="gallery" data-src={obj.full} className="grid-item" href={obj.full} key={uuidv4()} datatype={"image"} >
+                            <img className={"uk-animation-fade"} key={uuidv4()} src={obj.thumbnail} />
+                        </a>
+                    )}
+                )}
+            </Fbox>
         </div>
-    )
+    );
 }
 
 export default Images;

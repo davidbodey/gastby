@@ -1,4 +1,3 @@
-const { ImgixSourceType } = require('@imgix/gatsby');
 const shouldAnalyseBundle = process.env.ANALYSE_BUNDLE
 
 // const url = "https://api.imgix.com/api/v1/sources/621d6e77ab7c542a57446d8d/assets?page[size]=1000";
@@ -106,15 +105,6 @@ module.exports = {
         },
       },
     },
-    {
-      resolve: `@imgix/gatsby`,
-      options: {
-        domain: 'davids.imgix.net',
-        defaultImgixParams: {auto: ['compress', 'format']},
-      }
-    },
-
-
 
     `gatsby-plugin-image`,
     `gatsby-transformer-sharp`,

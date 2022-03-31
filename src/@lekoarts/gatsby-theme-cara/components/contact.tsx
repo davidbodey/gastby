@@ -51,8 +51,6 @@ const Contact = ({ offset, factor = 1 }: { offset: number; factor?: number }) =>
         <Svg icon="box" hiddenMobile width={8} stroke color="icon_blue" left="45%" top="10%" />
       </UpDownWide>
       <Svg icon="box" width={6} stroke color="icon_red" left="4%" top="20%" />
-      {/*<Svg icon="box" width={12} stroke color="icon_brightest" left="70%" top="60%" />*/}
-      {/*<Svg icon="box" width={12} stroke color="icon_brightest" left="20%" top="30%" />*/}
       <Svg icon="box" width={8} stroke color="icon_green" left="80%" top="70%" />
     </Divider>
   </div>
